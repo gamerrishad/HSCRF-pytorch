@@ -9,6 +9,8 @@ from model.evaluator import evaluator
 from model.model import ner_model
 from model.data_packer import Repack
 
+local_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Evaluating LM-BLSTM-CRF')
     parser.add_argument('--load_arg', default='./checkpoint/6365035.json', help='path to arg json')
@@ -61,7 +63,8 @@ if __name__ == "__main__":
     print('load model')
     model.load_state_dict(checkpoint_file['state_dict'])
 
-    model.cuda()
+    #model.cuda()
+    model.to(local_device)
     packer = Repack()
 
     evaluator = evaluator(packer, CRF_l_map, SCRF_l_map)

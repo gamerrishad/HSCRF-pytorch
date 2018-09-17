@@ -1,6 +1,8 @@
 from torch.autograd import Variable
 from torch.utils.data import Dataset
+import torch
 
+local_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class Repack:
     """
@@ -46,27 +48,28 @@ class Repack:
         ocl = b_f.size(1)
 
         if test:
-            f_f = Variable(f_f[:, 0:mlen[0]].transpose(0, 1), volatile=True).cuda()
-            f_p = Variable(f_p[:, 0:mlen[1]].transpose(0, 1), volatile=True).cuda()
-            b_f = Variable(b_f[:, -mlen[0]:].transpose(0, 1), volatile=True).cuda()
-            b_p = Variable((b_p[:, 0:mlen[1]] - ocl + mlen[0]).transpose(0, 1), volatile=True).cuda()
-            w_f = Variable(w_f[:, 0:mlen[1]].transpose(0, 1), volatile=True).cuda()
-            tg_v = Variable(target[:, 0:mlen[1]].transpose(0, 1), volatile=True).unsqueeze(2).cuda()
-            mask_v = Variable(mask[:, 0:mlen[1]].transpose(0, 1), volatile=True).cuda()
-            SCRF_labels = Variable(SCRF_labels[:, 0:mlen[2]], volatile=True).cuda()
-            mask_SCRF_laebls = Variable(mask_SCRF_laebls[:, 0:mlen[2]], volatile=True).cuda()
-            cnn_features = Variable(cnn_features[:, 0:mlen[1], 0:mlen[3]].transpose(0, 1), volatile=True).cuda().contiguous()
+            with torch.no_grad():
+                f_f = Variable(f_f[:, 0:mlen[0]].transpose(0, 1)).to(local_device)
+                f_p = Variable(f_p[:, 0:mlen[1]].transpose(0, 1)).to(local_device)
+                b_f = Variable(b_f[:, -mlen[0]:].transpose(0, 1)).to(local_device)
+                b_p = Variable((b_p[:, 0:mlen[1]] - ocl + mlen[0]).transpose(0, 1)).to(local_device)
+                w_f = Variable(w_f[:, 0:mlen[1]].transpose(0, 1)).to(local_device)
+                tg_v = Variable(target[:, 0:mlen[1]].transpose(0, 1)).unsqueeze(2).to(local_device)
+                mask_v = Variable(mask[:, 0:mlen[1]].transpose(0, 1)).to(local_device)
+                SCRF_labels = Variable(SCRF_labels[:, 0:mlen[2]]).to(local_device)
+                mask_SCRF_laebls = Variable(mask_SCRF_laebls[:, 0:mlen[2]]).to(local_device)
+                cnn_features = Variable(cnn_features[:, 0:mlen[1], 0:mlen[3]].transpose(0, 1)).to(local_device).contiguous()
         else:
-            f_f = Variable(f_f[:, 0:mlen[0]].transpose(0, 1)).cuda()
-            f_p = Variable(f_p[:, 0:mlen[1]].transpose(0, 1)).cuda()
-            b_f = Variable(b_f[:, -mlen[0]:].transpose(0, 1)).cuda()
-            b_p = Variable((b_p[:, 0:mlen[1]] - ocl + mlen[0]).transpose(0, 1)).cuda()
-            w_f = Variable(w_f[:, 0:mlen[1]].transpose(0, 1)).cuda()
-            tg_v = Variable(target[:, 0:mlen[1]].transpose(0, 1)).unsqueeze(2).cuda()
-            mask_v = Variable(mask[:, 0:mlen[1]].transpose(0, 1)).cuda()
-            SCRF_labels = Variable(SCRF_labels[:, 0:mlen[2]]).cuda()
-            mask_SCRF_laebls = Variable(mask_SCRF_laebls[:, 0:mlen[2]]).cuda()
-            cnn_features = Variable(cnn_features[:, 0:mlen[1], 0:mlen[3]].transpose(0, 1)).cuda().contiguous()
+            f_f = Variable(f_f[:, 0:mlen[0]].transpose(0, 1)).to(local_device)
+            f_p = Variable(f_p[:, 0:mlen[1]].transpose(0, 1)).to(local_device)
+            b_f = Variable(b_f[:, -mlen[0]:].transpose(0, 1)).to(local_device)
+            b_p = Variable((b_p[:, 0:mlen[1]] - ocl + mlen[0]).transpose(0, 1)).to(local_device)
+            w_f = Variable(w_f[:, 0:mlen[1]].transpose(0, 1)).to(local_device)
+            tg_v = Variable(target[:, 0:mlen[1]].transpose(0, 1)).unsqueeze(2).to(local_device)
+            mask_v = Variable(mask[:, 0:mlen[1]].transpose(0, 1)).to(local_device)
+            SCRF_labels = Variable(SCRF_labels[:, 0:mlen[2]]).to(local_device)
+            mask_SCRF_laebls = Variable(mask_SCRF_laebls[:, 0:mlen[2]]).to(local_device)
+            cnn_features = Variable(cnn_features[:, 0:mlen[1], 0:mlen[3]].transpose(0, 1)).to(local_device).contiguous()
 
         return f_f, f_p, b_f, b_p, w_f, tg_v, mask_v, SCRF_labels, mask_SCRF_laebls, cnn_features
 

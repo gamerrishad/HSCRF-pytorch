@@ -25,6 +25,8 @@ torch.cuda.manual_seed(seed)
 np.random.seed(seed)
 print('seed: ', seed)
 
+local_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Learning with LM-LSTM-CRF together with Language Model')
@@ -143,7 +145,8 @@ if __name__ == "__main__":
     if args.load_check_point and args.load_opt:
         optimizer.load_state_dict(checkpoint_file['optimizer'])
 
-    model.cuda()
+    #model.cuda()
+    model.to(local_device)
     packer = Repack()
 
     tot_length = sum(map(lambda t: len(t), dataset_loader))

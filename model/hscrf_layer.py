@@ -6,6 +6,7 @@ import numpy as np
 
 import utils
 
+local_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class HSCRF(nn.Module):
 
@@ -57,7 +58,7 @@ class HSCRF(nn.Module):
 
         """
         bias = np.sqrt(3.0 / input_embedding.size(1))
-        nn.init.uniform(input_embedding, -bias, bias)
+        nn.init.uniform_(input_embedding, -bias, bias)
 
     def init_linear(self, input_linear):
         """
@@ -65,7 +66,7 @@ class HSCRF(nn.Module):
 
         """
         bias = np.sqrt(6.0 / (input_linear.weight.size(0) + input_linear.weight.size(1)))
-        nn.init.uniform(input_linear.weight, -bias, bias)
+        nn.init.uniform_(input_linear.weight, -bias, bias)
         if input_linear.bias is not None:
             input_linear.bias.data.zero_()
 
@@ -79,9 +80,9 @@ class HSCRF(nn.Module):
 
         """
 
-        logalpha = Variable(torch.FloatTensor(self.batch_size, self.sent_len+1, self.tagset_size).fill_(-10000.)).cuda()
+        logalpha = Variable(torch.FloatTensor(self.batch_size, self.sent_len+1, self.tagset_size).fill_(-10000.)).to(local_device)
         logalpha[:, 0, self.start_id] = 0.
-        istarts = [0] * self.ALLOWED_SPANLEN + range(self.sent_len - self.ALLOWED_SPANLEN+1)
+        istarts = [0] * self.ALLOWED_SPANLEN + list(range(self.sent_len - self.ALLOWED_SPANLEN+1))
         for i in range(1, self.sent_len+1):
                 tmp = scores[:, istarts[i]:i, i-1] + \
                         logalpha[:, istarts[i]:i].unsqueeze(3).expand(self.batch_size, i - istarts[i], self.tagset_size, self.tagset_size)
@@ -107,10 +108,10 @@ class HSCRF(nn.Module):
         batch_size = factexprscalars.size(0)
         sentlen = factexprscalars.size(1)
         factexprscalars = factexprscalars.data
-        logalpha = torch.FloatTensor(batch_size, sentlen+1, self.tagset_size).fill_(-10000.).cuda()
+        logalpha = torch.FloatTensor(batch_size, sentlen+1, self.tagset_size).fill_(-10000.).to(local_device)
         logalpha[:, 0, self.start_id] = 0.
-        starts = torch.zeros((batch_size, sentlen, self.tagset_size)).cuda()
-        ys = torch.zeros((batch_size, sentlen, self.tagset_size)).cuda()
+        starts = torch.zeros((batch_size, sentlen, self.tagset_size)).to(local_device)
+        ys = torch.zeros((batch_size, sentlen, self.tagset_size)).to(local_device)
 
         for j in range(1, sentlen + 1):
             istart = 0
@@ -166,8 +167,8 @@ class HSCRF(nn.Module):
 
         """
 
-        scores = Variable(torch.zeros(self.batch_size, self.sent_len, self.sent_len, self.SCRF_feature_dim)).cuda()
-        diag0 = torch.LongTensor(range(self.sent_len)).cuda()
+        scores = Variable(torch.zeros(self.batch_size, self.sent_len, self.sent_len, self.SCRF_feature_dim)).to(local_device)
+        diag0 = torch.LongTensor(range(self.sent_len)).to(local_device)
         ht = feats
         scores[:, diag0, diag0] = ht
         if self.sent_len == 1:
@@ -195,12 +196,12 @@ class HSCRF(nn.Module):
 
         # 3 for O, STOP, START
         validtag_size = self.tagset_size-3
-        scores = Variable(torch.zeros(self.batch_size, self.sent_len, self.sent_len, self.tagset_size, self.tagset_size)).cuda()
-        diag0 = torch.LongTensor(range(self.sent_len)).cuda()
+        scores = Variable(torch.zeros(self.batch_size, self.sent_len, self.sent_len, self.tagset_size, self.tagset_size)).to(local_device)
+        diag0 = torch.LongTensor(range(self.sent_len)).to(local_device)
         # m10000 for STOP
-        m10000 = Variable(torch.FloatTensor([-10000.]).expand(self.batch_size, self.sent_len, self.tagset_size, 1)).cuda()
+        m10000 = Variable(torch.FloatTensor([-10000.]).expand(self.batch_size, self.sent_len, self.tagset_size, 1)).to(local_device)
         # m30000 for STOP, START, O
-        m30000 = Variable(torch.FloatTensor([-10000.]).expand(self.batch_size, self.sent_len, self.tagset_size, 3)).cuda()
+        m30000 = Variable(torch.FloatTensor([-10000.]).expand(self.batch_size, self.sent_len, self.tagset_size, 3)).to(local_device)
         for span_len in range(min(self.ALLOWED_SPANLEN, self.sent_len)):
             emb_x = self.concat_features(feats, span_len)
             emb_x = self.new_hidden2CRFtag(emb_x)
@@ -250,7 +251,7 @@ class HSCRF(nn.Module):
         new_emb_z1 = [emb_z[:, i:i + 1, i:i + span_len + 1] for i in range(sent_len - span_len)]
         new_emb_z1 = torch.cat(new_emb_z1, 1)
         new_emb_z2 = (new_emb_z1[:, :, 0]-new_emb_z1[:, :, span_len]).unsqueeze(2).expand(batch_size, sent_len-span_len, span_len+1, hidden_dim)
-        index = Variable(torch.LongTensor(range(span_len+1))).cuda()
+        index = Variable(torch.LongTensor(range(span_len+1))).to(local_device)
         index = self.index_embeds(index).unsqueeze(0).unsqueeze(0).expand(batch_size, sent_len-span_len, span_len+1, self.index_embeds_dim)
         new_emb = torch.cat((new_emb_z1, new_emb_z2, index), 3).transpose(1,2).contiguous()
 

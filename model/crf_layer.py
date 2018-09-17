@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import utils
+import model.utils as utils
 from torch.autograd import Variable
 
 
@@ -81,7 +81,7 @@ class CRF(nn.Module):
         tg_energy = tg_energy.masked_select(mask).sum()
 
         seq_iter = enumerate(scores)
-        _, inivalues = seq_iter.next()
+        _, inivalues = seq_iter.__next__()
         partition = inivalues[:, self.start_tag, :].clone()
         for idx, cur_values in seq_iter:
             cur_values = cur_values + partition.contiguous().view(bat_size, self.tagset_size, 1).\
@@ -111,10 +111,11 @@ class CRF(nn.Module):
         bat_size = scores.size(1)
 
         mask = Variable(1 - mask.data, volatile=True)
-        decode_idx = Variable(torch.cuda.LongTensor(seq_len-1, bat_size), volatile=True)
+        #decode_idx = Variable(torch.cuda.LongTensor(seq_len-1, bat_size), volatile=True)
+        decode_idx = Variable(torch.LongTensor(seq_len-1, bat_size), volatile=True)
 
         seq_iter = enumerate(scores)
-        _, inivalues = seq_iter.next()
+        _, inivalues = seq_iter.__next__()
         forscores = inivalues[:, self.start_tag, :]
         back_points = list()
         for idx, cur_values in seq_iter:
