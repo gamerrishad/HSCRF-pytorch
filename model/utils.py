@@ -1,14 +1,13 @@
 import itertools
+import json
 from functools import reduce
 
 import numpy as np
 import torch
-import json
-
 import torch.nn as nn
 import torch.nn.init
-from model.data_packer import CRFDataset_WC
 
+from model.data_packer import CRFDataset_WC
 
 zip = getattr(itertools, 'izip', zip)
 
@@ -715,8 +714,10 @@ def crf_to_scrf(decoded_crf, r_l_map, scrf_l_map):
         mask = [1] * cur_scrf_len + [0] * (maxl_1 - cur_scrf_len)
         scrfdata.append(s_l_pad)
         masks.append(mask)
-    scrfdata = torch.cuda.LongTensor(scrfdata)
-    masks = torch.cuda.ByteTensor(masks)
+    # scrfdata = torch.cuda.LongTensor(scrfdata)
+    scrfdata = torch.LongTensor(scrfdata)
+    # masks = torch.cuda.ByteTensor(masks)
+    masks = torch.ByteTensor(masks)
     return scrfdata, masks
 
 def scrf_to_crf(decoded_scrf, l_map):
@@ -748,8 +749,10 @@ def scrf_to_crf(decoded_scrf, l_map):
         mask = [1] * cur_len_1 + [0] * (maxl_1 - cur_len_1)
         crfdata.append(i_l_pad)
         masks.append(mask)
-    crfdata = torch.cuda.LongTensor(crfdata).transpose(0,1).unsqueeze(2)
-    masks = torch.cuda.ByteTensor(masks).transpose(0,1)
+    # crfdata = torch.cuda.LongTensor(crfdata).transpose(0,1).unsqueeze(2)
+    crfdata = torch.LongTensor(crfdata).transpose(0, 1).unsqueeze(2)
+    # masks = torch.cuda.ByteTensor(masks).transpose(0,1)
+    masks = torch.ByteTensor(masks).transpose(0,1)
     return crfdata, masks
 
 def decode_with_crf(crf, word_reps, mask_v, l_map):
@@ -764,7 +767,8 @@ def decode_with_crf(crf, word_reps, mask_v, l_map):
     scores = crf.cal_score(word_reps).data
     mask_v = mask_v.data
     decoded_crf = decoded_crf.data
-    decoded_crf_withpad = torch.cat((torch.cuda.LongTensor(1,bat_size).fill_(l_map['<start>']), decoded_crf), 0)
+    # decoded_crf_withpad = torch.cat((torch.cuda.LongTensor(1,bat_size).fill_(l_map['<start>']), decoded_crf), 0)
+    decoded_crf_withpad = torch.cat((torch.LongTensor(1, bat_size).fill_(l_map['<start>']), decoded_crf), 0)
     decoded_crf_withpad = decoded_crf_withpad.transpose(0,1).cpu().numpy()
     label_size = len(l_map)
 
@@ -773,7 +777,8 @@ def decode_with_crf(crf, word_reps, mask_v, l_map):
     for i_l in decoded_crf_withpad:
         bi_crf.append([i_l[ind] * label_size + i_l[ind + 1] for ind in range(0, cur_len)] + [
             i_l[cur_len] * label_size + l_map['<pad>']])
-    bi_crf = torch.cuda.LongTensor(bi_crf).transpose(0,1).unsqueeze(2)
+    # bi_crf = torch.cuda.LongTensor(bi_crf).transpose(0,1).unsqueeze(2)
+    bi_crf = torch.LongTensor(bi_crf).transpose(0, 1).unsqueeze(2)
 
     tg_energy = torch.gather(scores.view(seq_len, bat_size, -1), 2, bi_crf).view(seq_len, bat_size)  # seq_len * bat_size
     tg_energy = tg_energy.transpose(0,1).masked_select(mask_v.transpose(0,1))

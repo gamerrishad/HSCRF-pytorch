@@ -1,5 +1,6 @@
 import torch.nn as nn
-import utils
+
+import model.utils as utils
 
 
 class hw(nn.Module):

@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-import model.utils as utils
 from torch.autograd import Variable
+
+import model.utils as utils
 
 
 class CRF(nn.Module):
@@ -115,6 +116,8 @@ class CRF(nn.Module):
             mask = Variable(1 - mask.data)
             #decode_idx = Variable(torch.cuda.LongTensor(seq_len-1, bat_size), volatile=True)
             decode_idx = Variable(torch.LongTensor(seq_len-1, bat_size))
+            print(decode_idx.shape)
+            print(type(decode_idx))
 
         seq_iter = enumerate(scores)
         _, inivalues = seq_iter.__next__()
@@ -131,7 +134,11 @@ class CRF(nn.Module):
         decode_idx[-1] = pointer
         for idx in range(len(back_points)-2, -1, -1):
             pointer = torch.gather(back_points[idx], 1, pointer.contiguous().view(bat_size, 1))
+            print(pointer.shape)
+            print(type(pointer))
+            print("***************")
+            print(decode_idx[idx].shape)
+            pointer = pointer.squeeze(1)
             decode_idx[idx] = pointer
+            print("NO ERROR HERE")
         return decode_idx
-
-
