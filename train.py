@@ -44,7 +44,7 @@ if __name__ == "__main__":
                         help='dimension of word-level lstm layer')  ############## 300
     parser.add_argument('--dropout_ratio', type=float, default=0.55, help='dropout ratio')
     parser.add_argument('--epoch', type=int, default=150, help='maximum epoch number') ######### 150 ###
-    parser.add_argument('--least_epoch', type=int, default=75, help='minimum epoch number') ######### 75 #######
+    parser.add_argument('--least_epoch', type=int, default=5, help='minimum epoch number')  ######### 75 #######
     parser.add_argument('--early_stop', type=int, default=10, help='early stop epoch number') ######## 10 ####
     parser.add_argument('--start_epoch', type=int, default=0, help='start point of epoch')
     parser.add_argument('--checkpoint', default='./checkpoint/', help='checkpoint path')
@@ -57,7 +57,8 @@ if __name__ == "__main__":
     parser.add_argument('--word_lstm_layers', type=int, default=1, help='number of word level layers')
     parser.add_argument('--lr', type=float, default=0.015, help='initial learning rate')
     parser.add_argument('--lr_decay', type=float, default=0.05, help='decay ratio of learning rate')
-    parser.add_argument('--load_check_point', default='', help='path previous checkpoint that want to be loaded')
+    parser.add_argument('--load_check_point', default='./checkpoint/100.model',
+                        help='path previous checkpoint that want to be loaded')  #############
     parser.add_argument('--load_opt', action='store_true', help='also load optimizer from the checkpoint')
     parser.add_argument('--momentum', type=float, default=0.9, help='momentum for sgd')
     parser.add_argument('--clip_grad', type=float, default=5.0, help='clip grad at')
@@ -222,6 +223,8 @@ if __name__ == "__main__":
             best_dev_f1_jnt = dev_f1_jnt
             best_test_f1_jnt = test_f1_jnt
 
+            print("UPDATED!!!!!!!!!!!!")
+
             try:
                 utils.save_checkpoint({
                         'epoch': args.start_epoch,
@@ -235,6 +238,7 @@ if __name__ == "__main__":
                         'ALLOW_SPANLEN': args.allowspan
                     }, {'args': vars(args)
                         }, args.checkpoint + str(seed))
+                print("SAVED!!!!!!!!!!!!!!!!")
             except Exception as inst:
                     print(inst)
 

@@ -232,6 +232,11 @@ def read_corpus(lines):
         features.append(tmp_fl)
         labels.append(iob_iobes(tmp_ll))
 
+    # print("*************************")
+    # print(features)
+    # print(labels)
+    # print("--------------------------")
+
     return features, labels
 
 
@@ -239,6 +244,8 @@ def iob_iobes(tags):
     """
     IOB -> IOBES
     """
+    # print(tags)
+
     iob2(tags)
     new_tags = []
     for i, tag in enumerate(tags):
@@ -258,6 +265,12 @@ def iob_iobes(tags):
                 new_tags.append(tag.replace('I-', 'E-'))
         else:
             raise Exception('Invalid IOB format!')
+
+    # print(tags)
+    # print("****************")
+    # print(new_tags)
+    # print("eeeeeeeeeeeeeeeeeeeeee")
+
     return new_tags
 
 
@@ -618,7 +631,7 @@ def iobes_to_spans(sequence, lut, strict_iob2=False):
     return set(chunks)
 
 
-def save_checkpoint(state, track_list, filename):
+def save_checkpoint(state, track_list, filename='saved_model'):
     """
     save checkpoint
     """
@@ -828,9 +841,6 @@ def rescored_with_crf(decoded_scrf, l_map, scores):
         end = start + mask
         scrf_result_scored_by_crf.append(crf_batch_score[start:end].sum())
         start = end
-
-    print("--- UTILS ---------")
-    print(type(scrf_result_scored_by_crf))
 
     # scrf_result_scored_by_crf = torch.cat(scrf_result_scored_by_crf).cpu().data.numpy()
     scrf_result_scored_by_crf = torch.stack(scrf_result_scored_by_crf, dim=0).cpu().data.numpy()
