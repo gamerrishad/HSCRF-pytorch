@@ -829,6 +829,10 @@ def rescored_with_crf(decoded_scrf, l_map, scores):
         scrf_result_scored_by_crf.append(crf_batch_score[start:end].sum())
         start = end
 
-    scrf_result_scored_by_crf = torch.cat(scrf_result_scored_by_crf).cpu().data.numpy()
+    print("--- UTILS ---------")
+    print(type(scrf_result_scored_by_crf))
+
+    # scrf_result_scored_by_crf = torch.cat(scrf_result_scored_by_crf).cpu().data.numpy()
+    scrf_result_scored_by_crf = torch.stack(scrf_result_scored_by_crf, dim=0).cpu().data.numpy()
     return scrf_result_scored_by_crf
 

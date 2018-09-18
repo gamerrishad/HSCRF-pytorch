@@ -1,25 +1,27 @@
 from __future__ import print_function
+
+import argparse
+import codecs
+import functools
+import itertools
+import os
+import sys
 import time
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import codecs
-import argparse
-import os
-import sys
 from tqdm import tqdm
-import itertools
-import functools
-import numpy as np
 
 import model.utils as utils
+from model.data_packer import Repack
 from model.evaluator import evaluator
 from model.model import ner_model
-from model.data_packer import Repack
-
 
 # seed = int(np.random.uniform(0,1)*10000000)
-seed = 5703958
+# seed = 5703958
+seed = 100
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 np.random.seed(seed)
@@ -36,8 +38,10 @@ if __name__ == "__main__":
     parser.add_argument('--test_file', default='./data/eng.testb', help='path to test file')
     parser.add_argument('--batch_size', type=int, default=10, help='batch_size')
     parser.add_argument('--unk', default='unk', help='unknow-token in pre-trained embedding')
-    parser.add_argument('--char_lstm_hidden_dim', type=int, default=300, help='dimension of char-level lstm layer for language model')
-    parser.add_argument('--word_hidden_dim', type=int, default=300, help='dimension of word-level lstm layer')
+    parser.add_argument('--char_lstm_hidden_dim', type=int, default=300,
+                        help='dimension of char-level lstm layer for language model')  #########300
+    parser.add_argument('--word_hidden_dim', type=int, default=300,
+                        help='dimension of word-level lstm layer')  ############## 300
     parser.add_argument('--dropout_ratio', type=float, default=0.55, help='dropout ratio')
     parser.add_argument('--epoch', type=int, default=150, help='maximum epoch number') ######### 150 ###
     parser.add_argument('--least_epoch', type=int, default=75, help='minimum epoch number') ######### 75 #######
