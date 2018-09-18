@@ -110,9 +110,11 @@ class CRF(nn.Module):
         seq_len = scores.size(0)
         bat_size = scores.size(1)
 
-        mask = Variable(1 - mask.data, volatile=True)
-        #decode_idx = Variable(torch.cuda.LongTensor(seq_len-1, bat_size), volatile=True)
-        decode_idx = Variable(torch.LongTensor(seq_len-1, bat_size), volatile=True)
+
+        with torch.no_grad():
+            mask = Variable(1 - mask.data)
+            #decode_idx = Variable(torch.cuda.LongTensor(seq_len-1, bat_size), volatile=True)
+            decode_idx = Variable(torch.LongTensor(seq_len-1, bat_size))
 
         seq_iter = enumerate(scores)
         _, inivalues = seq_iter.__next__()

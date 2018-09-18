@@ -39,9 +39,9 @@ if __name__ == "__main__":
     parser.add_argument('--char_lstm_hidden_dim', type=int, default=300, help='dimension of char-level lstm layer for language model')
     parser.add_argument('--word_hidden_dim', type=int, default=300, help='dimension of word-level lstm layer')
     parser.add_argument('--dropout_ratio', type=float, default=0.55, help='dropout ratio')
-    parser.add_argument('--epoch', type=int, default=150, help='maximum epoch number')
-    parser.add_argument('--least_epoch', type=int, default=75, help='minimum epoch number')
-    parser.add_argument('--early_stop', type=int, default=10, help='early stop epoch number')
+    parser.add_argument('--epoch', type=int, default=150, help='maximum epoch number') ######### 150 ###
+    parser.add_argument('--least_epoch', type=int, default=75, help='minimum epoch number') ######### 75 #######
+    parser.add_argument('--early_stop', type=int, default=10, help='early stop epoch number') ######## 10 ####
     parser.add_argument('--start_epoch', type=int, default=0, help='start point of epoch')
     parser.add_argument('--checkpoint', default='./checkpoint/', help='checkpoint path')
     parser.add_argument('--word_embedding_dim', type=int, default=100, help='dimension of word embedding')
@@ -180,7 +180,7 @@ if __name__ == "__main__":
                 epoch_loss += utils.to_scalar(loss)
 
                 loss.backward()
-                nn.utils.clip_grad_norm(model.parameters(), args.clip_grad)
+                nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
                 optimizer.step()
 
         for f_f, f_p, b_f, b_p, w_f, tg_v, mask_v, len_v, SCRF_labels, mask_SCRF_labels, cnn_features in tqdm(
@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
             epoch_loss += utils.to_scalar(loss)
             loss.backward()
-            nn.utils.clip_grad_norm(model.parameters(), args.clip_grad)
+            nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
             optimizer.step()
 
         epoch_loss /= tot_length
